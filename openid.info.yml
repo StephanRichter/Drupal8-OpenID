@@ -1,0 +1,8 @@
+name: 'OpenId'
+description: 'Allows to assign openids to users. The users can then login using that open ids'
+package: Auth
+type: module
+core: 8.x
+
+dependencies:
+	- externalauth
