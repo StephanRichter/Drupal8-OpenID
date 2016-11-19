@@ -13,3 +13,13 @@ openid.update:
     _title: 'Set Openid for User'
   requirements:
     _permission: 'update own openid'
+
+openid.login:
+  path: openid_login
+  defaults:
+    _form: Drupal\openid\Form\OpenIdLoginForm
+    _title: Log in using your OpenID
+  requirements:
+    _permission: access content
+  options:
+    _maintenance_access: TRUE'
