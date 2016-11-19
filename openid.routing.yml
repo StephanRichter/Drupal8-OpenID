@@ -5,3 +5,11 @@ openid.debug:
     _title: 'Overview (Debug for OpenId)'
   requirements:
     _permission: 'debug openid'
+
+openid.update:
+  path: 'user/openid'
+  defaults:
+    _form: 'Drupal\openid\Form\UpdateForm'
+    _title: 'Set Openid for User'
+  requirements:
+    _permission: 'update own openid'

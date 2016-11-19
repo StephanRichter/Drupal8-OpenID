@@ -39,5 +39,10 @@ class OpenIdController extends ControllerBase {
         '#markup' => $content,
     );
   }
+
+  public function update($claimed_user_id){
+
+	return array('#type'=>'markup','#markup'=>'claimed id:'.$claimed_user_id);
+  }
 }
 

@@ -4,3 +4,10 @@ openid.admin:
   parent: system.admin_config_people
   route_name: openid.debug
   weight: 100
+
+openid.update:
+  title: 'Alter your OpenId'
+  description: 'Set or alter the openid belonging to your account'
+  parent: system.admin_config_people
+  route_name: openid.update
+  weight: 100
