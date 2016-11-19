@@ -1,0 +1,24 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function openid_help($route_name, RouteMatchInterface $route_match){
+	switch ($route_name){
+		case 'help.page.openid': return openid_help_page();
+	}
+}
+
+function openid_help_page(){
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The OpenID module allows users to log in using the OpenID single sign on service. <a href="@openid-net">OpenID</a> is a secure method for logging into many websites with a single username and password. It does not require special software, and it does not share passwords with any site to which it is associated, including the site being logged into. The main benefit to users is that they can have a single password that they can use on many websites. This means they can easily update their single password from a centralized location, rather than having to change dozens of passwords individually. For more information, see the online handbook entry for <a href="@handbook">OpenID module</a>.', array('@openid-net' => 'http://openid.net', '@handbook' => 'http://drupal.org/documentation/modules/openid')) . '</p>';
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('Logging in with OpenID') . '</dt>';
+      $output .= '<dd>' . t("To log in using OpenID, a user must already have an OpenID account. Users can then create site accounts using their OpenID, assign one or more OpenIDs to an existing account, and log in using an OpenID. This lowers the barrier to registration, which helps increase the user base, and offers convenience and security to the users. Because OpenID cannot guarantee a user is legitimate, email verification is still necessary. When logging in, users are presented with the option of entering their OpenID URL, which will look like <em>myusername.openidprovider.com</em>. The site then communicates with the OpenID server, asking it to verify the identity of the user. If the user is logged into their OpenID server, the server communicates back to your site, verifying the user. If they are not logged in, the OpenID server will ask the user for their password. At no point does the site being logged into record the user's OpenID password.") . '</dd>';
+      $output .= '</dl>';
+	return $output;
+}

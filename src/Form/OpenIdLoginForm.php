@@ -13,7 +13,8 @@ use Drupal\Core\Url;
 use Drupal\user\UserStorageInterface;
 
 /**
- * Lorem Ipsum block form
+ * This form presents the user a single field, where he/she can enter an openid, which the is used to log in the user.
+ * This Class is extending UserLoginForm, since this easily allows us to acces the userStorage.
  */
 class OpenIdLoginForm extends UserLoginForm {
 
