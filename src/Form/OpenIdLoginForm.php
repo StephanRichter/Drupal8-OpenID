@@ -18,10 +18,6 @@ use Drupal\user\UserStorageInterface;
  */
 class OpenIdLoginForm extends UserLoginForm {
 
-protected $userStorage;
-
-
-
   /**
    * {@inheritdoc}
    */
@@ -59,20 +55,25 @@ protected $userStorage;
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
 
-	$openid = $form_state->getValue('openid');
-	$uid = null;
-	$rows = db_query("SELECT uid FROM {authmap} WHERE provider='openid' AND authname=:authname",array(':authname'=>$openid));
-	foreach ($rows as $row){
+	$openid = $form_state->getValue('openid'); // get the openid entered by the user
+	$uid 	= null; // initialize uid
+
+	// find uid belonging to openid
+	$rows   = db_query("SELECT uid FROM {authmap} WHERE provider='openid' AND authname=:authname",array(':authname'=>$openid));
+	foreach ($rows as $row){ // we should only get one row here
 		$uid = $row->uid;
         }
-	if ($uid == null) {
-		$form_state->setErrorByName('openid',$this->t('This openid is not known to the system'));
-	} else {
-		$form_state->setValue('uid', $uid);
+	if ($uid == null) { // we given openid is not assigned with any account
+		$form_state->setErrorByName('openid',$this->t('This openid (@openid) is not known to the system',array('@openid'=>$openid)));
+		return;
 	}
+	$form_state->setValue('uid', $uid);
 	
-
-	
+	$return_to = $form_state->getValue('openid.return_to');
+	if (empty($return_to)){
+		$return_to = '';
+	}
+	\Drupal::moduleHandler()->invoke('openid','begin',array($openid,$return_to,$form_state));
   }
 
   /**

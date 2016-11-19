@@ -22,3 +22,67 @@ function openid_help_page(){
       $output .= '</dl>';
 	return $output;
 }
+
+/**
+ * Perform discovery on a claimed ID to determine the OpenID provider endpoint.
+ *
+ * Discovery methods are provided by the hook_openid_discovery_method_info and
+ * could be further altered using the hook_openid_discovery_method_info_alter.
+ *
+ * @param $claimed_id
+ *   The OpenID URL to perform discovery on.
+ *
+ * @return
+ *   The resulting discovery array from the first successful discovery method,
+ *   which must contain following keys:
+ *   - 'services' (required) an array of discovered services (including OpenID
+ *   version, endpoint URI, etc).
+ *   - 'claimed_id' (optional) new claimed identifer, found by following HTTP
+ *   redirects during the services discovery.
+ *   If all the discovery method fails or if no appropriate discovery method is
+ *   found, FALSE is returned.
+ */
+function openid_discovery($claimed_id) {
+	module_load_include('inc', 'openid');
+
+	$methods = \Drupal::moduleHandler()->invokeAll('openid_discovery_method_info');
+	\Drupal::moduleHandler()->alter('openid_discovery_method_info', $methods);
+
+	// Execute each method in turn and return first successful discovery.
+	foreach ($methods as $method) {
+		$discovery = $method($claimed_id);
+		if (!empty($discovery)) {
+			return $discovery;
+		}
+	}
+	return false;
+}
+
+/**
+ * The initial step of OpenID authentication responsible for the following:
+ *  - Perform discovery on the claimed OpenID.
+ *  - If possible, create an association with the Provider's endpoint.
+ *  - Create the authentication request.
+ *  - Perform the appropriate redirect.
+ *
+ * @param $claimed_id The OpenID to authenticate
+ * @param $return_to The endpoint to return to from the OpenID Provider
+ */
+function openid_begin($claimed_id, $return_to = '', $form_state = null){
+	module_load_include('inc','openid');	
+	
+	$service = null;
+	$claimed_id = openid_normalize($claimed_id);
+	$discovery = openid_discovery($claimed_id);
+
+	if (!empty($discovery['services'])) {
+		$service = _openid_select_service($discovery['services']);
+	}
+
+	// Quit if the discovery result was empty or if we can't select any service.
+	if (!$discovery || !$service) {
+		$form_state->setErrorByName('openid_identifier',t('This openid is not known to the system'));
+		return;
+	}
+}
+
