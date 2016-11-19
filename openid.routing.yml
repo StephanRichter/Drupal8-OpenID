@@ -1,0 +1,7 @@
+openid.debug:
+  path: 'admin/config/people/openid/debug'
+  defaults:
+    _controller: '\Drupal\openid\Controller\OpenIdController::debug'
+    _title: 'Overview (Debug for OpenId)'
+  requirements:
+    _permission: 'debug openid'

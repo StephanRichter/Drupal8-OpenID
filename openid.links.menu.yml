@@ -1,0 +1,6 @@
+openid.admin:
+  title: 'OpenID Debugging'
+  description: 'Overview on test items for OpenID module'
+  parent: system.admin_config_people
+  route_name: openid.debug
+  weight: 100
