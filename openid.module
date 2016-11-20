@@ -275,18 +275,29 @@ function openid_association($op_endpoint) {
     $public = _openid_math_powmod($gen, $private, $mod);
 
     // If there is no existing association, then request one
+    $headers = array('Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8');
     $assoc_request = openid_association_request($public);
     $assoc_message = _openid_encode_message(_openid_create_message($assoc_request));
     $assoc_options = array(
-      'headers' => array('Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8'),
+      'headers' => $headers,
       'method' => 'POST',
       'data' => $assoc_message,
     );
-    $assoc_result = drupal_http_request($op_endpoint, $assoc_options);
-    if (isset($assoc_result->error)) {
+    // $assoc_result = drupal_http_request($op_endpoint, $assoc_options); // Drupal 7
+    $assoc_options = array(
+	'headers' => $headers,
+	'body' => $assoc_message,
+    );
+    $client = \Drupal::httpClient();
+    $assoc_result = $client->request('POST',$op_endpoint,$assoc_options);
+
+    if ($assoc_result->hasHeader('error')) {
       return FALSE;
     }
-    $assoc_response = _openid_parse_message($assoc_result->data);
+
+    $assoc_result_data = $assoc_result->getBody()->getContents();
+
+    $assoc_response = _openid_parse_message($assoc_result_data);
     if (isset($assoc_response['mode']) && $assoc_response['mode'] == 'error') {
       return FALSE;
     }
