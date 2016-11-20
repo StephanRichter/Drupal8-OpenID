@@ -561,7 +561,7 @@ function _openid_dh_rand($stop) {
   }
 
   do {
-    $bytes = "\x00" . drupal_random_bytes($nbytes);
+    $bytes = "\x00" . random_bytes($nbytes);
     $n = _openid_dh_binary_to_long($bytes);
     // Keep looping if this value is in the low duplicated range.
   } while (_openid_math_cmp($n, $duplicate) < 0);
@@ -570,7 +570,7 @@ function _openid_dh_rand($stop) {
 }
 
 function _openid_get_bytes($num_bytes) {
-  return drupal_random_bytes($num_bytes);
+  return random_bytes($num_bytes);
 }
 
 function _openid_response($str = NULL) {

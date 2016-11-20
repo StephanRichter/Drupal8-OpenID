@@ -312,3 +312,21 @@ function openid_association($op_endpoint) {
   }
   return $assoc_handle;
 }
+
+function openid_association_request($public) {
+  module_load_include('inc', 'openid');
+
+  $request = array(
+    'openid.ns' => OPENID_NS_2_0,
+    'openid.mode' => 'associate',
+    'openid.session_type' => 'DH-SHA1',
+    'openid.assoc_type' => 'HMAC-SHA1'
+  );
+
+  if ($request['openid.session_type'] == 'DH-SHA1' || $request['openid.session_type'] == 'DH-SHA256') {
+    $cpub = _openid_dh_long_to_base64($public);
+    $request['openid.dh_consumer_public'] = $cpub;
+  }
+ 
+  return $request;
+}
