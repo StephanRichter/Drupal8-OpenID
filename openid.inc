@@ -159,7 +159,9 @@ function _openid_xrds_parse($raw_xml) {
   }
 
   // Also stop parsing if there is an unreasonably large number of tags.
-  if ($dom->getElementsByTagName('*')->length > variable_get('openid_xrds_maximum_tag_count', 30000)) {
+  // if ($dom->getElementsByTagName('*')->length > variable_get('openid_xrds_maximum_tag_count', 30000)) { // Drupal 7
+  if ($dom->getElementsByTagName('*')->length > \Drupal::state()->get('openid_xrds_maximum_tag_count', 30000)) {
+
     return array();
   }
 

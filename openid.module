@@ -81,8 +81,159 @@ function openid_begin($claimed_id, $return_to = '', $form_state = null){
 
 	// Quit if the discovery result was empty or if we can't select any service.
 	if (!$discovery || !$service) {
-		$form_state->setErrorByName('openid_identifier',t('This openid is not known to the system'));
+		$form_state->setErrorByName('openid_identifier',t('Sorry, @openid is not a valid OpenID. Ensure you have spelled your ID correctly.',array('@openid'=>$claimed_id)));
 		return;
 	}
+
+	// Set claimed id from discovery.
+	if (!empty($discovery['claimed_id'])) {
+		$claimed_id = $discovery['claimed_id'];
+	}
+
+	// TODO: go on here
+  }
+
+}
+
+/**
+  * Implements hook_openid_discovery_method_info().
+ *
+ * Define standard discovery methods.
+ */
+function openid_openid_discovery_method_info() {
+  // The discovery process will stop as soon as one discovery method succeed.
+  // We first attempt to discover XRI-based identifiers, then standard XRDS
+  // identifiers via Yadis and HTML-based discovery, conforming to the OpenID 2.0
+  // specification.
+  return array(
+    'xri' => '_openid_xri_discovery',
+    'xrds' => '_openid_xrds_discovery',
+  );
+}
+
+/**
+ * OpenID discovery method: perform an XRI discovery.
+ *
+ * @see http://openid.net/specs/openid-authentication-2_0.html#discovery
+ * @see hook_openid_discovery_method_info()
+ * @see openid_discovery()
+ *
+ * @return
+ *   An array of discovered services and claimed identifier or NULL. See
+ *   openid_discovery() for more specific information.
+ */
+function _openid_xri_discovery($claimed_id) {
+  if (_openid_is_xri($claimed_id)) {
+    // Resolve XRI using a proxy resolver (Extensible Resource Identifier (XRI)
+    // Resolution Version 2.0, section 11.2 and 14.3).
+    $xrds_url = variable_get('xri_proxy_resolver', 'http://xri.net/') . rawurlencode($claimed_id) . '?_xrd_r=application/xrds+xml';
+    $discovery = _openid_xrds_discovery($xrds_url);
+    if (!empty($discovery['services']) && is_array($discovery['services'])) {
+      foreach ($discovery['services'] as $i => &$service) {
+        $status = $service['xrd']->children(OPENID_NS_XRD)->Status;
+        if ($status && $status->attributes()->cid == 'verified') {
+          $service['claimed_id'] = openid_normalize((string)$service['xrd']->children(OPENID_NS_XRD)->CanonicalID);
+        }
+        else {
+          // Ignore service if the Canonical ID could not be verified.
+          unset($discovery['services'][$i]);
+        }
+      }
+      if (!empty($discovery['services'])) {
+        return $discovery;
+      }
+    }
+  }
+}
+
+/**
+ * OpenID discovery method: perform a XRDS discovery.
+ *
+ * @see http://openid.net/specs/openid-authentication-2_0.html#discovery
+ * @see hook_openid_discovery_method_info()
+ * @see openid_discovery()
+ *
+ * @return
+ *   An array of discovered services and claimed identifier or NULL. See
+ *   openid_discovery() for more specific information.
+ */
+function _openid_xrds_discovery($claimed_id) {
+  $services = array();
+
+  $xrds_url = $claimed_id;
+  $scheme = @parse_url($xrds_url, PHP_URL_SCHEME);
+  if ($scheme == 'http' || $scheme == 'https') {
+    // For regular URLs, try Yadis resolution first, then HTML-based discovery
+    $headers = array('Accept' => 'application/xrds+xml');
+//    $result = drupal_http_request($xrds_url, array('headers' => $headers));
+    $client = \Drupal::httpClient();
+    $result = $client->request('GET',$xrds_url,array('headers'=>$headers));
+
+    // Check for HTTP error and make sure, that we reach the target. If the
+    // maximum allowed redirects are exhausted, final destination URL isn't
+    // reached, but drupal_http_request() doesn't return any error.
+    // @todo Remove the check for 200 HTTP result code after the following issue
+    // will be fixed: http://drupal.org/node/1096890.
+    if (!$result->hasHeader('error') && $result->getStatusCode() == 200) {
+      $result_data = $result->getBody()->getContents();
+      // Replace the user-entered claimed_id if we received a redirect.
+      if ($result->hasHeader('redirect_url')) {
+	die('Branch redirect not tested!'); // TODO
+        $claimed_id = openid_normalize($result->getHeader('redirect_url'));
+      }
+
+      if ($result->hasHeader('content-type') && preg_match("/application\/xrds\+xml/", $result->getHeader('content-type'))) {
+	die('Branch conten-type: application/xrds+xml not tested!'); // TODO
+        // Parse XML document to find URL
+        $services = _openid_xrds_parse($result_data);
+      } else {
+        $xrds_url = NULL;
+        if ($result->hasHeader('x-xrds-location')) {
+          $xrds_url = $result->getHeader('x-xrds-location');
+	  if (is_array($xrds_url)) $xrds_url=reset($xrds_url);
+        } else {
+	  die('Branch http-equiv link not tested!'); // TODO
+          // Look for meta http-equiv link in HTML head
+          $xrds_url = _openid_meta_httpequiv('X-XRDS-Location', $result_data);
+        }
+        if (!empty($xrds_url)) {
+          $headers = array('Accept' => 'application/xrds+xml');
+          $xrds_result = $client->request('GET',$xrds_url, array('headers' => $headers));
+          if (!$xrds_result->hasHeader('error')) {
+            $services = _openid_xrds_parse($xrds_result->getBody()->getContents());
+          }
+        }
+      }
+
+      // Check for HTML delegation
+      if (count($services) == 0) {
+        // Look for 2.0 links
+        $uri = _openid_link_href('openid2.provider', $result_data);
+        $identity = _openid_link_href('openid2.local_id', $result_data);
+        $type = 'http://specs.openid.net/auth/2.0/signon';
+
+        // 1.x links
+        if (empty($uri)) {
+          $uri = _openid_link_href('openid.server', $result_data);
+          $identity = _openid_link_href('openid.delegate', $result_data);
+          $type = 'http://openid.net/signon/1.1';
+        }
+        if (!empty($uri)) {
+          $services[] = array(
+            'uri' => $uri,
+            'identity' => $identity,
+            'types' => array($type),
+          );
+        }
+      }
+    }
+  }
+
+  if (!empty($services)) {
+    return array(
+      'services' => $services,
+      'claimed_id' => $claimed_id,
+    );
+  }
 }
 
