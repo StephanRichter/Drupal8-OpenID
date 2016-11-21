@@ -41,20 +41,19 @@ class OpenIdController extends ControllerBase {
   }
 
 
-  public function authenticate(){
-	//$result = openid_complete(); // Drupal 7
-	$result = \Drupal::moduleHandler()->invoke('openid','complete');  // invoke openid_complete in openid.module
-print_r($result); die();
-  switch ($result['status']) {
-    case 'success':
-      return openid_authentication($result);
-    case 'failed':
-      drupal_set_message(t('OpenID login failed.'), 'error');
-      break;
-    case 'cancel':
-      drupal_set_message(t('OpenID login cancelled.'));
-      break;
-  }
-  drupal_goto();
-  }
+	public function authenticate(){
+		//$result = openid_complete(); // Drupal 7
+		$result = \Drupal::moduleHandler()->invoke('openid','complete');  // invoke openid_complete in openid.module
+  		switch ($result['status']) {
+			case 'success':
+				return openid_authentication($result);
+			case 'failed':
+				drupal_set_message(t('OpenID login failed.'), 'error');
+				break;
+			case 'cancel':
+				drupal_set_message(t('OpenID login cancelled.'));
+				break;
+		}
+		drupal_goto();
+	}
 }
