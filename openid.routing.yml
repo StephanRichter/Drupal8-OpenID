@@ -27,8 +27,8 @@ openid.login:
 openid.authenticate:
   path: openid/authenticate
   defaults:
-    _form: Drupal\openid\Form\OpenIdAuthenticateForm
-    _title: Form to authenticate with openid
+    _form: Drupal\openid\Controller\OpenIdController::authenticate
+    _title: Processing openid authentication
   requirements:
     _permission: access content
   options:
