@@ -15,65 +15,72 @@ use Drupal\Core\Url;
  * Lorem Ipsum block form
  */
 class UpdateForm extends FormBase {
+	/**
+	 * {@inheritdoc}
+	 */
+	public function getFormId() {
+		return 'openid_update_form';
+	}
+
+	/**
+	 * {@inheritdoc}
+	 * Lorem ipsum generator block.
+	 */
+	public function buildForm(array $form, FormStateInterface $form_state) {
+		$user = \Drupal::currentUser();
+		$uid = $user->id();
+
+		$form['openid'] = array(
+			'#type' => 'textfield',
+			'#title' => $this->t('OpenId'),
+			'#default_value' => $openid,
+			'#description' => $this->t('Post you openid here'),
+		);
+		
+		$rows = db_query('SELECT openid FROM openid_mapping WHERE uid = :uid',array(':uid'=>$uid));		
+		$options = array('none');
+		foreach ($rows as $row){
+			$options[$row->openid] = $row->openid;
+		}
+
+		$form['delete_openid'] = array(
+			'#type' =>'select',
+			'#title'=>$this->t('Delete openid?'),
+			'#options'=>$options,
+			'#descripion'=> $this->t('If you want to delete openids from your account, select one here'),
+		);
+
+		// Submit
+		$form['submit'] = array(
+			'#type' => 'submit',
+			'#value' => $this->t('Update'),
+		);
+
+		return $form;
+	  }
 
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'openid_update_form';
-  }
+	/**
+	 * {@inheritdoc}
+	 */
+	public function validateForm(array &$form, FormStateInterface $form_state) {
+	}
 
-  /**
-   * {@inheritdoc}
-   * Lorem ipsum generator block.
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+	/**
+	 * {@inheritdoc}
+	 */
+	public function submitForm(array &$form, FormStateInterface $form_state) {
+		$uid = \Drupal::currentUser()->id();
 
-    $user = \Drupal::currentUser();
-    $uid = $user->id();
+		$delete_openid = trim($form_state->getValue('delete_openid'));
+		if (!empty($delete_openid)){
+			db_query("DELETE FROM openid_mapping WHERE openid = :openid AND uid = :uid",array(':openid'=>$delete_openid,':uid'=>$uid));
+		}
 
-    $rows = db_query("SELECT authname FROM {authmap} WHERE provider='openid' AND uid=:uid", array(':uid' => $uid));
-    foreach ($rows as $row){
-	$openid = $row->authname;
-    }
-
-    // How many paragraphs?
-    // $options = new array();
-    $form['openid'] = array(
-      '#type' => 'textfield',
-      '#title' => $this->t('OpenId'),
-      '#default_value' => $openid,
-      '#description' => $this->t('Post you openid here'),
-    );
-
-    // Submit
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => $this->t('Update'),
-    );
-
-    return $form;
-  }
-
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $uid = \Drupal::currentUser()->id();
-
-    $openid = $form_state->getValue('openid');
-    db_query("UPDATE {authmap} SET authname = :authname WHERE provider='openid' AND uid = :uid",array(':authname'=>$openid,':uid'=>$uid));
-    $form_state->setRedirect(
-      'openid.update'
-    );
-  }
+		$openid = trim($form_state->getValue('openid'));
+		if (!empty($openid)){
+			db_query("INSERT IGNORE INTO openid_mapping (openid, uid) VALUES(:openid, :uid)",array(':openid'=>$openid,':uid'=>$uid));
+		}
+	}
 }
 
