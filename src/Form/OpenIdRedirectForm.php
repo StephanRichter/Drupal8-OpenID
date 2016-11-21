@@ -35,7 +35,6 @@ class OpenIdRedirectForm extends FormBase{
 		}
 		$url     = (isset($args['url']))     ? $args['url']    :'';
 		$message = (isset($args['message']))? $args['message']:array();
-print_r($message); die();
 
 		$form['#action'] = $url;
 		$form['#method'] = "post";

@@ -89,7 +89,6 @@ function openid_redirect_http($url, $message) {
  */
 function openid_redirect($url, $message) {
   global $language;
-print_r($message); die();
   $output = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n";
   $output .= '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="' . $language->language . '" lang="' . $language->language . '">' . "\n";
   $output .= "<head>\n";
@@ -100,7 +99,7 @@ print_r($message); die();
 //$elements = drupal_get_form('openid_redirect_form', $url, $message); // Drupal 7
   $elements = \Drupal::formBuilder()->getForm('Drupal\openid\Form\OpenIdRedirectForm', array('url'=>$url,'message'=>$message));
   $output .= drupal_render($elements);
-  $output .= '<script type="text/javascript">document.getElementById("openid-redirect-form").submit();</script>' . "\n";
+//  $output .= '<script type="text/javascript">document.getElementById("openid-redirect-form").submit();</script>' . "\n";
   $output .= "</body>\n";
   $output .= "</html>\n";
   //  print $output; // Drupal 7

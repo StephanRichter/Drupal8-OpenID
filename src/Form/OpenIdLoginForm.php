@@ -62,7 +62,6 @@ class OpenIdLoginForm extends UserLoginForm {
 
 		$openid = $form_state->getValue('openid'); // get the openid entered by the user
 		$uid 	= null; // initialize uid
-
 		// find uid belonging to openid
 		$rows   = db_query("SELECT uid FROM {authmap} WHERE provider='openid' AND authname=:authname",array(':authname'=>$openid));
 		foreach ($rows as $row){ // we should only get one row here
@@ -94,12 +93,12 @@ class OpenIdLoginForm extends UserLoginForm {
         // now the openid should be validated.
 	
 	// log in the user with the known id
-	$account = $this->userStorage->load($uid);
+/*	$account = $this->userStorage->load($uid);
 	$form_state->setRedirect(
 		'entity.user.canonical',
 		array('user' => $uid)
 	);
-	user_login_finalize($account);
+	user_login_finalize($account);//*/
   }
 }
 

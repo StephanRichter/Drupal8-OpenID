@@ -71,7 +71,6 @@ function openid_discovery($claimed_id) {
  */
 function openid_begin($claimed_id, $return_to = '', $form_state = null){
 	module_load_include('inc','openid');	
-	
 	$service = null;
 	$claimed_id = openid_normalize($claimed_id);
 	$discovery = openid_discovery($claimed_id);
@@ -99,7 +98,6 @@ function openid_begin($claimed_id, $return_to = '', $form_state = null){
 	// Store the login form values so we can pass them to
 	// user_exteral_login later.
 	$_SESSION['openid']['user_login_values'] = $form_values;
-
 	// If a supported math library is present, then create an association.
 	$assoc_handle = '';
 	if (_openid_get_math_library()) {
@@ -117,9 +115,7 @@ function openid_begin($claimed_id, $return_to = '', $form_state = null){
 		}
 		$identity = !empty($service['identity']) ? $service['identity'] : $claimed_id;
 	}
-
 	$request = openid_authentication_request($claimed_id, $identity, $return_to, $assoc_handle, $service);
-
 	if ($service['version'] == 2) {
 		openid_redirect($service['uri'], $request);
 	} else {
@@ -173,8 +169,9 @@ function openid_authentication_request($claimed_id, $identity, $return_to = '', 
 		$request['openid.ax.type.name_son'] = 'http://schema.openid.net/namePerson/friendly';
 	}
 
+	// Stephan Richter: As far as i understand this, the following lines check, wheter another module implements openid?
 	// $request = array_merge($request, module_invoke_all('openid', 'request', $request)); // Drupal 7
-     	$methods = \Drupal::moduleHandler()->invokeAll('openid_request',$request);
+     	$methods = \Drupal::moduleHandler()->invokeAll('openid',array('request',$request));
 	$request = array_merge($request,$methods);
 
 	// module_invoke_all() uses array_merge_recursive() which might return nested
@@ -404,6 +401,7 @@ function openid_association($op_endpoint) {
         'created' => REQUEST_TIME,
       ))
       ->execute();
+
     $assoc_handle = $assoc_response['assoc_handle'];
   }
   return $assoc_handle;
