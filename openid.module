@@ -722,6 +722,10 @@ function openid_association_request($public) {
   return $request;
 }
 
+function user_external_load($identity){
+	
+}
+
 /**
  * Authenticate a user or attempt registration.
  *
