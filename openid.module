@@ -65,6 +65,7 @@ function openid_discovery($claimed_id) {
  *  - Create the authentication request.
  *  - Perform the appropriate redirect.
  *
+ * This method is called from OpenIfLoginForm.validateForm via invoke call
  * @param $claimed_id The OpenID to authenticate
  * @param $return_to The endpoint to return to from the OpenID Provider
  */

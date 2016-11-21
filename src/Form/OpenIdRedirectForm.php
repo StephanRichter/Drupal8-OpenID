@@ -35,27 +35,26 @@ class OpenIdRedirectForm extends FormBase{
 		}
 		$url     = (isset($args['url']))     ? $args['url']    :'';
 		$message = (isset($args['message']))? $args['message']:array();
+print_r($message); die();
 
+		$form['#action'] = $url;
+		$form['#method'] = "post";
+		foreach ($message as $key => $value) {
+			$form[$key] = array(
+				'#type' => 'hidden',
+				'#name' => $key,
+				'#value' => $value,
+			);
+		 }
+		$form['actions'] = array('#type' => 'actions');
+		$form['actions']['submit'] = array(
+			'#type' => 'submit',
+			'#prefix' => '<noscript><div>',
+			'#suffix' => '</div></noscript>',
+			'#value' => t('Send'),
+		);
 
-
-  $form['#action'] = $url;
-  $form['#method'] = "post";
-  foreach ($message as $key => $value) {
-    $form[$key] = array(
-      '#type' => 'hidden',
-      '#name' => $key,
-      '#value' => $value,
-    );
-  }
-  $form['actions'] = array('#type' => 'actions');
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#prefix' => '<noscript><div>',
-    '#suffix' => '</div></noscript>',
-    '#value' => t('Send'),
-  );
-
-  return $form;
+		return $form;
 
 	}
 

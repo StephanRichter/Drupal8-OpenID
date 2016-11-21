@@ -22,4 +22,14 @@ openid.login:
   requirements:
     _permission: access content
   options:
-    _maintenance_access: TRUE'
+    _maintenance_access: TRUE
+
+openid.authenticate:
+  path: openid/authenticate
+  defaults:
+    _form: Drupal\openid\Form\OpenIdAuthenticateForm
+    _title: Form to authenticate with openid
+  requirements:
+    _permission: access content
+  options:
+    _maintenance_access: TRUE
