@@ -5,9 +5,9 @@ openid.admin:
   route_name: openid.debug
   weight: 100
 
-openid.update:
-  title: 'Alter your OpenId'
-  description: 'Set or alter the openid belonging to your account'
+openid.manage:
+  title: 'Manage your OpenIDs'
+  description: 'Add or delete openids belonging to your account'
   parent: system.admin_config_people
-  route_name: openid.update
+  route_name: openid.manage
   weight: 100

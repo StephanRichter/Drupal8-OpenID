@@ -14,7 +14,7 @@ use Drupal\Core\Url;
 /**
  * Lorem Ipsum block form
  */
-class UpdateForm extends FormBase {
+class ManageForm extends FormBase {
 	/**
 	 * {@inheritdoc}
 	 */
@@ -32,9 +32,9 @@ class UpdateForm extends FormBase {
 
 		$form['openid'] = array(
 			'#type' => 'textfield',
-			'#title' => $this->t('OpenId'),
+			'#title' => $this->t('Add an OpenId'),
 			'#default_value' => $openid,
-			'#description' => $this->t('Post you openid here'),
+			'#description' => $this->t('Post your new openid here'),
 		);
 		
 		$rows = db_query('SELECT openid FROM openid_mapping WHERE uid = :uid',array(':uid'=>$uid));		

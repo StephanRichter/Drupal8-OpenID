@@ -1,4 +1,4 @@
 debug openid:
     title: 'Access OpenID debug information'
-update own openid:
-    title: 'Update own openid'
+manage own openids:
+    title: 'Manage own openids'

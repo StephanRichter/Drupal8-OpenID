@@ -4,5 +4,3 @@ package: aa_Auth
 type: module
 core: 8.x
 
-dependencies:
-  - other:externalauth

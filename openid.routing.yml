@@ -6,13 +6,13 @@ openid.debug:
   requirements:
     _permission: 'debug openid'
 
-openid.update:
-  path: 'user/openid'
+openid.manage:
+  path: 'user/openids'
   defaults:
-    _form: 'Drupal\openid\Form\UpdateForm'
-    _title: 'Set Openid for User'
+    _form: 'Drupal\openid\Form\ManageForm'
+    _title: 'Manage your OpenIDs'
   requirements:
-    _permission: 'update own openid'
+    _permission: 'manage own openids'
 
 openid.login:
   path: openid_login

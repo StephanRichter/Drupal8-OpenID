@@ -37,7 +37,7 @@ class OpenIdLoginForm extends UserLoginForm {
 			'#type' => 'textfield',
 			'#title' => $this->t('OpenId'),
 			'#default_value' => '',
-			'#description' => $this->t('Post you openid here'),
+			'#description' => $this->t('Post your openid here'),
 		);
 		
 		$form['openid.return_to'] = array(
@@ -63,11 +63,11 @@ class OpenIdLoginForm extends UserLoginForm {
 		$openid = $form_state->getValue('openid'); // get the openid entered by the user
 		$uid 	= null; // initialize uid
 		// find uid belonging to openid
-		$rows   = db_query("SELECT uid FROM {authmap} WHERE provider='openid' AND authname=:authname",array(':authname'=>$openid));
+		$rows   = db_query("SELECT uid FROM openid_mapping WHERE openid=:openid",array(':openid'=>$openid));
 		foreach ($rows as $row){ // we should only get one row here
 			$uid = $row->uid;
        		 }
-		if ($uid == null) { // we given openid is not assigned with any account
+		if ($uid == null) { // when given openid is not assigned with any account
 			$form_state->setErrorByName('openid',$this->t('This openid (@openid) is not known to the system',array('@openid'=>$openid)));
 			return;
 		}
