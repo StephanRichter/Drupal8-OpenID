@@ -88,17 +88,16 @@ function openid_schema() {
 		'description' => 'Stores associations from openids to user ids',
 		'fields' => array(
 			'id' => array(
-				'type' => 'serial'
+				'type' => 'serial',
 				'description' => 'Unique id of this entry. Auto-incrementing.',
-				'not_null' => true,
-				'default' => 0,
+				'not null' => true,
+				'default' => null,
 			),
 			'openid' => array(
-				'type' = 'varchar_ascii'
+				'type' => 'varchar_ascii',
 				'length' => 255,
 				'description' => 'An openid',
 				'not null' => true,
-				'default' => null,
 			),
 			'uid' => array(
 				'type' => 'int',
@@ -107,8 +106,8 @@ function openid_schema() {
 				'default' => null,
 			)
 		),
-		'primary_key' => array('id'),
-		'unique_keys' => array(
+		'primary key' => array('id'),
+		'unique keys' => array(
 			'openid' => array('openid'),
 		),
 	);  
