@@ -20,3 +20,4 @@ Workflow is as follows:
 	  - contains (amongst others) return-to: http://oauth.keawe.de/openid/authenticate?destination=user
       - calls openid_redirect_http for service version != 2
 - openid_redirect form submutted via javascript, returns the user to site/openid/authenticate, which is handled by OpenIdController::authenticate
+  - checks result and performs login
