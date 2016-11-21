@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Implements hook_help().
@@ -144,8 +145,8 @@ function openid_complete($response = array()) {
   if (isset($_SESSION['openid']['service']['uri']) && isset($_SESSION['openid']['claimed_id'])) {
     $service = $_SESSION['openid']['service'];
     $claimed_id = $_SESSION['openid']['claimed_id'];
-    unset($_SESSION['openid']['service']);
-    unset($_SESSION['openid']['claimed_id']);
+//    unset($_SESSION['openid']['service']);
+//    unset($_SESSION['openid']['claimed_id']);
     if (isset($response['openid.mode'])) {
       if ($response['openid.mode'] == 'cancel') {
         $response['status'] = 'cancel';
@@ -722,8 +723,13 @@ function openid_association_request($public) {
   return $request;
 }
 
-function user_external_load($identity){
-	
+function openid_load_user($identity){
+	$rows = db_query("SELECT uid FROM openid_mapping WHERE openid = :openid",array(':openid'=>$identity));
+	foreach ($rows as $row){
+		$uid = $row->uid;
+		return \Drupal\user\Entity\User::load($uid);
+	}
+	return null;
 }
 
 /**
@@ -733,33 +739,35 @@ function user_external_load($identity){
  */
 function openid_authentication($response) {
   $identity = $response['openid.claimed_id'];
-  $account = user_external_load($identity);
+  $account = openid_load_user($identity);
 
   // Tries to load user account if user_external_load fails due to possibly
   // incompletely stored OpenID identifier in the authmap.
-  if (!isset($account->uid) && variable_get('openid_less_obtrusive_transition', FALSE)) {
+  if (!isset($account->uid) && \Drupal::state()->get('openid_less_obtrusive_transition', FALSE)) {
     module_load_include('inc', 'openid');
     $account = _openid_invalid_openid_transition($identity, $response);
   }
 
   if (isset($account->uid)) {
-    if (!variable_get('user_email_verification', TRUE) || $account->login) {
+    if (!\Drupal::state()->get('user_email_verification', TRUE) || $account->login) {
       // Check if user is blocked.
-      $state['values']['name'] = $account->name;
-      user_login_name_validate(array(), $state);
-      if (!form_get_errors()) {
+      if (!user_is_blocked($account->name)){
+//      user_login_name_validate(array(), $state); // Drupal 7
+//      if (!form_get_errors()) { // Drupal 7
         // Load global $user and perform final login tasks.
-        $form_state['uid'] = $account->uid;
-        user_login_submit(array(), $form_state);
+	user_login_finalize($account);
         // Let other modules act on OpenID login
-        module_invoke_all('openid_response', $response, $account);
+	// module_invoke_all('openid_response', $response, $account); // Drupal 7
+	\Drupal::moduleHandler()->invokeAll('openid_response',array($respinse,$account));   
       }
     }
     else {
       drupal_set_message(t('You must validate your email address for this account before logging in via OpenID.'));
    }
-  }
-  elseif (variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)) {
+  } elseif (\Drupal::state()->get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)) {
+	drupal_set_message(t('User Registration by OpenID not implemented for Drupal 8 by now.'),'error'); // TODO
+	$response = new RedirectResponse('/user');
+	return $response;
     // Register new user.
 
     // Save response for use in openid_form_user_register_form_alter().
@@ -770,8 +778,12 @@ function openid_authentication($response) {
     drupal_form_submit('user_register_form', $form_state);
 
     if (!empty($form_state['user'])) {
-      module_invoke_all('openid_response', $response, $form_state['user']);
-      drupal_goto();
+      // module_invoke_all('openid_response', $response, $form_state['user']); // Drupal 7
+      \Drupal::moduleHandler()->invokeAll('openid_response', array($response, $form_state['user'])); // Drupal 7
+	// drupal_goto(); // Drupal 7
+        $response = new RedirectResponse('/user');
+	return $response;
+	$response->send(); 
     }
 
     $messages = drupal_get_messages('error');
@@ -792,11 +804,16 @@ function openid_authentication($response) {
     // registration page and prefill with the values we received.
     $destination = drupal_get_destination();
     unset($_GET['destination']);
-    drupal_goto('user/register', array('query' => $destination));
-  }
-  else {
+    // drupal_goto('user/register', array('query' => $destination)); // Drupal 7
+    $response = new RedirectResponse('user/register',array('query'=>$destination));
+    return $response;
+    $response->send();
+  } else {
     drupal_set_message(t('Only site administrators can create new user accounts.'), 'error');
   }
-  drupal_goto();
+//  drupal_goto(); // Drupal 7
+	$response = new RedirectResponse('/user');
+	return $response;
+	$response->send();
 }
 

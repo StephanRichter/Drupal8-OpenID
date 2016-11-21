@@ -4,7 +4,7 @@ openid.debug:
     _controller: '\Drupal\openid\Controller\OpenIdController::debug'
     _title: 'Overview (Debug for OpenId)'
   requirements:
-    _permission: 'debug openid'
+    _permission: 'access content'
 
 openid.manage:
   path: 'user/openids'

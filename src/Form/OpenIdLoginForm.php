@@ -43,7 +43,7 @@ class OpenIdLoginForm extends UserLoginForm {
 		$form['openid.return_to'] = array(
 			'#type' => 'hidden',
 // 			'#value' => url('openid/authenticate', array('absolute' => TRUE, 'query' => user_login_destination())), // Drupal 7
-			'#value' => \Drupal::url('openid.authenticate', array('destination' => 'user'),array('absolute'=>true)),
+			'#value' => \Drupal::url('openid.authenticate', array('destination' => 'user','random'=>rand()),array('absolute'=>true)),
 		);
 
 		// Submit
@@ -61,17 +61,6 @@ class OpenIdLoginForm extends UserLoginForm {
 	public function validateForm(array &$form, FormStateInterface $form_state) {
 
 		$openid = $form_state->getValue('openid'); // get the openid entered by the user
-		$uid 	= null; // initialize uid
-		// find uid belonging to openid
-		$rows   = db_query("SELECT uid FROM openid_mapping WHERE openid=:openid",array(':openid'=>$openid));
-		foreach ($rows as $row){ // we should only get one row here
-			$uid = $row->uid;
-       		 }
-		if ($uid == null) { // when given openid is not assigned with any account
-			$form_state->setErrorByName('openid',$this->t('This openid (@openid) is not known to the system',array('@openid'=>$openid)));
-			return;
-		}
-		$form_state->setValue('uid', $uid);
 		
 		$return_to = $form_state->getValue('openid.return_to');
 		if (empty($return_to)){
@@ -84,21 +73,7 @@ class OpenIdLoginForm extends UserLoginForm {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-
-	// the form has been validated before
-	$uid = $form_state->getValue('uid');
-	$openid = $form_state->getValue('openid');
-
-	// At this point, we have an openid and also the uid of the user it belongs to.
-        // now the openid should be validated.
-	
-	// log in the user with the known id
-/*	$account = $this->userStorage->load($uid);
-	$form_state->setRedirect(
-		'entity.user.canonical',
-		array('user' => $uid)
-	);
-	user_login_finalize($account);//*/
+	// This does not do anything, all actions are taken care of by openid_begin called from the validation function.
   }
 }
 

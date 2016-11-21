@@ -7,27 +7,23 @@
 namespace Drupal\openid\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class OpenIdController extends ControllerBase {
 
   public function debug() {
 
-	$user = \Drupal::currentUser();
-/*	$query = db_insert('authmap')
-		->fields(array(
-			'uid' => $user->id(),
-			'authname' => 'test',
-			'provider' => 'openid',))
-		->execute(); */
-
-	$rows = db_query("SELECT uid,authname,provider FROM {authmap} WHERE provider='openid' AND uid=:uid", array(':uid' => $user->id()));
-	$content = '<ul>';
+	$oldsession = $_SESSION['openid']['test'];	
+	$newsession = rand(1,100);
+	$_SESSION['openid']['test'] = $newsession;
+	$rows = db_query("SELECT id,uid,openid FROM openid_mapping");
+	$content = "Old Sessoin content: $oldsession<br/>New Session content: $newsession<br/> <ul>";
 	foreach ($rows as $row){
 		$content.='<li>';
-		$authname = ($row->authname);
+		$id  = $row->id;
 		$uid = $row->uid;
-		$provider = ($row->provider);
-		$content.="$uid<ul><li>$authname</li><li>$provider</li></ul>";
+		$oid = $row->openid;
+		$content.="$id<ul><li>user = $uid</li><li>openid = $oid</li></ul>";
 		$content.='</li>';		
 	}
 	$content.='</ul>';
@@ -44,7 +40,10 @@ class OpenIdController extends ControllerBase {
 	public function authenticate(){
 		//$result = openid_complete(); // Drupal 7
 		$result = \Drupal::moduleHandler()->invoke('openid','complete');  // invoke openid_complete in openid.module
-  		switch ($result['status']) {
+		$status = $result['status'];
+
+
+  		switch ($status) {
 			case 'success':
 				return openid_authentication($result);
 			case 'failed':
@@ -53,7 +52,11 @@ class OpenIdController extends ControllerBase {
 			case 'cancel':
 				drupal_set_message(t('OpenID login cancelled.'));
 				break;
+			default:
+				drupal_set_message(t('OpenId login failed with status ='.$status), 'error');
 		}
-		drupal_goto();
+		// drupal_goto(); // Drupal 7
+		return array('#type'=>'markup','#markup'=>'<pre>'.print_r($_SESSION,true).'</pre>');
+		return $this->redirect('openid.login');
 	}
 }
