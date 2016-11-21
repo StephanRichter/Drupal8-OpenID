@@ -135,18 +135,19 @@ function openid_begin($claimed_id, $return_to = '', $form_state = null){
  */
 function openid_complete($response = array()) {
   module_load_include('inc', 'openid');
+ 
+  $_SESSION['openid']['rand'] = rand();
 
   if (count($response) == 0) {
     $response = _openid_response();
   }
-
   // Default to failed response
   $response['status'] = 'failed';
   if (isset($_SESSION['openid']['service']['uri']) && isset($_SESSION['openid']['claimed_id'])) {
     $service = $_SESSION['openid']['service'];
     $claimed_id = $_SESSION['openid']['claimed_id'];
-//    unset($_SESSION['openid']['service']);
-//    unset($_SESSION['openid']['claimed_id']);
+    unset($_SESSION['openid']['service']);
+    unset($_SESSION['openid']['claimed_id']);
     if (isset($response['openid.mode'])) {
       if ($response['openid.mode'] == 'cancel') {
         $response['status'] = 'cancel';

@@ -13,9 +13,7 @@ class OpenIdController extends ControllerBase {
 
   public function debug() {
 
-	$oldsession = $_SESSION['openid']['test'];	
-	$newsession = rand(1,100);
-	$_SESSION['openid']['test'] = $newsession;
+//	$_SESSION['openid']['rand'] = rand();
 	$rows = db_query("SELECT id,uid,openid FROM openid_mapping");
 	$content = "Old Sessoin content: $oldsession<br/>New Session content: $newsession<br/> <ul>";
 	foreach ($rows as $row){
@@ -56,7 +54,6 @@ class OpenIdController extends ControllerBase {
 				drupal_set_message(t('OpenId login failed with status ='.$status), 'error');
 		}
 		// drupal_goto(); // Drupal 7
-		return array('#type'=>'markup','#markup'=>'<pre>'.print_r($_SESSION,true).'</pre>');
 		return $this->redirect('openid.login');
 	}
 }

@@ -43,7 +43,7 @@ class OpenIdLoginForm extends UserLoginForm {
 		$form['openid.return_to'] = array(
 			'#type' => 'hidden',
 // 			'#value' => url('openid/authenticate', array('absolute' => TRUE, 'query' => user_login_destination())), // Drupal 7
-			'#value' => \Drupal::url('openid.authenticate', array('destination' => 'user','random'=>rand()),array('absolute'=>true)),
+			'#value' => \Drupal::url('openid.authenticate', array('destination' => 'user'),array('absolute'=>true)),
 		);
 
 		// Submit
