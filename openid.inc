@@ -98,35 +98,16 @@ function openid_redirect($url, $message) {
   $output .= "</head>\n";
   $output .= "<body>\n";
 //$elements = drupal_get_form('openid_redirect_form', $url, $message); // Drupal 7
-  $elements = \Drupal::formBuilder()->getForm('openid_redirect_form', $url, $message);
+  $args = array('url'=>$url,'message'=>$message);
+  $elements = \Drupal::formBuilder()->getForm('Drupal\openid\Form\OpenIdRedirectForm', $args);
   $output .= drupal_render($elements);
   $output .= '<script type="text/javascript">document.getElementById("openid-redirect-form").submit();</script>' . "\n";
   $output .= "</body>\n";
   $output .= "</html>\n";
-  print $output;
+  //  print $output; // Drupal 7
 
-  drupal_exit();
-}
-
-function openid_redirect_form($form, &$form_state, $url, $message) {
-  $form['#action'] = $url;
-  $form['#method'] = "post";
-  foreach ($message as $key => $value) {
-    $form[$key] = array(
-      '#type' => 'hidden',
-      '#name' => $key,
-      '#value' => $value,
-    );
-  }
-  $form['actions'] = array('#type' => 'actions');
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#prefix' => '<noscript><div>',
-    '#suffix' => '</div></noscript>',
-    '#value' => t('Send'),
-  );
-
-  return $form;
+  //  drupal_exit(); // Drupal 7
+  die($output); // this generates a full html page, no need to do any further operations
 }
 
 /**
