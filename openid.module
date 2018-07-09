@@ -258,14 +258,22 @@ function openid_verify_assertion($service, $response) {
     $request = $response;
     $request['openid.mode'] = 'check_authentication';
     $message = _openid_create_message($request);
+    #$options = array(
+    #  'headers' => array('Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8'),
+    #  'method' => 'POST',
+    #  'data' => _openid_encode_message($message),
+    #);
+    #$result = drupal_http_request($service['uri'], $options);
     $options = array(
       'headers' => array('Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8'),
-      'method' => 'POST',
       'data' => _openid_encode_message($message),
     );
-    $result = drupal_http_request($service['uri'], $options);
-    if (!isset($result->error)) {
-      $response = _openid_parse_message($result->data);
+    $client = \Drupal::httpClient();
+    $result = $client->request('POST',$service['uri'],$options);
+#    if (!isset($result->error)) {
+    if (!$result->hasHeader('error') && $result->getStatusCode() == 200) {
+      $result_data = (string)$result->getBody();
+      $response = _openid_parse_message($result_data);
       if (strtolower(trim($response['is_valid'])) == 'true') {
         $valid = TRUE;
         if (!empty($response['invalidate_handle'])) {
