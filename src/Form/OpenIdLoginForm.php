@@ -31,6 +31,10 @@ class OpenIdLoginForm extends UserLoginForm {
 	 */
 	public function buildForm(array $form, FormStateInterface $form_state) {
 
+		$return_to = \Drupal::url('openid.authenticate', array('destination' => 'user'),array('absolute'=>true));
+		
+		if (isset($_GET['openid']))
+			\Drupal::moduleHandler()->invoke('openid','begin',[$_GET['openid'],$return_to,$form_state]); // invokes openid_begin in openid.module
 		// How many paragraphs?
 		// $options = new array();
 		$form['openid'] = array(
@@ -42,8 +46,7 @@ class OpenIdLoginForm extends UserLoginForm {
 		
 		$form['openid.return_to'] = array(
 			'#type' => 'hidden',
-// 			'#value' => url('openid/authenticate', array('absolute' => TRUE, 'query' => user_login_destination())), // Drupal 7
-			'#value' => \Drupal::url('openid.authenticate', array('destination' => 'user'),array('absolute'=>true)),
+			'#value' => $return_to,
 		);
 
 		// Submit
